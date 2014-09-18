@@ -22,7 +22,7 @@ Easily download Google Webfonts as a zip file
 
 ## API
 
-* `/<type>/css` Creates a zip archive of font family provided, where `type` can be one of `tff`, `woff` or `eotwoff` (default).
+* `/<type>/css` Creates a zip archive of font family provided, where `type` can be one of `tff`, `woff`,`woff2` or `eotwoff` (default).
 
 ## Remote Usage (Pre-hosted)
 
