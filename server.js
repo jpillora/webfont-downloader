@@ -34,14 +34,14 @@ function createFetcher(request, index, filename, ext) {
 				return cb(err);
 			if(res.statusCode !== 200)
 				return cb(fmt("Could not fetch item #%s %s (%s)", index, url, res.statusCode));
-			console.log("Fetched %s", url);
+			console.log("Fetched item #%s %s", index, url);
 			return cb(null, new Buffer(body));
 		});
 	};
 }
 
 function createArchive(request, name, css, cb) {
-	console.log('creating: %s', name);
+	console.log('Creating: %s', name);
 	var index = 0;
 	var filenames = [];
 	var fetches = [];
@@ -94,7 +94,7 @@ app.use(function(req, res) {
 	var name = RegExp.$3.replace(/\W/g,'');
 
 	var ua = types[type];
-	if(types && !ua)
+	if(type && !ua)
 		return res.status(400).send("Invalid type: " + type);
 
 	//create a request agent
@@ -110,6 +110,10 @@ app.use(function(req, res) {
 		createArchive,
 		finalizeArchive
 	], function end(err, archive) {
+		//log errors
+		if(err)
+			console.error(err);
+
 		if(res.$writingResponse)
 			return console.log("Double write prevented (%s)", err || 'output archive');
 		res.$writingResponse = true;
