@@ -10,7 +10,7 @@ Easily download Google Webfonts as a zip file
 
 2. Just change the domain to:
 
-	http://webfont-downloader.herokuapp.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800
+	http://webfonts.jpillora.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800
 
 3. It should begin to down an `OpenSans.zip` file
 
@@ -24,7 +24,13 @@ Easily download Google Webfonts as a zip file
 
 * `/<type>/css` Creates a zip archive of font family provided, where `type` can be one of `tff`, `woff` or `eotwoff` (default).
 
-## Heroku Usage (Two-click Deploy)
+## Remote Usage (Pre-hosted)
+
+```
+http://webfonts.jpillora.com/css?family=<Insert chosen font here>
+```
+
+## Remote Usage (Self-hosted)
 
 [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
 
@@ -40,7 +46,7 @@ Listening on 3000...
 
 #### Google already has this service available
 
-It does, though it only provides you with `.tff` files. This service downloads
+It does, though it provides you with **only** the `.tff` files. This also service downloads
 `.woff` and `.eof` files and creates a local version of the one-line include CSS file.
 
 #### Why is `eotwoff` the default?
