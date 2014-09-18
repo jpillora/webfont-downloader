@@ -28,13 +28,13 @@ function fetchCSS(request, name, query, cb) {
 function createFetcher(request, index, filename, ext) {
 	var url = filename+"."+ext;
 	return function(cb) {
-		console.log("Fetching item #%s %s", index, url);
+		// console.log("Fetching item #%s %s", index, url);
 		request(url, function(err, res, body) {
 			if(err)
 				return cb(err);
 			if(res.statusCode !== 200)
 				return cb(fmt("Could not fetch item #%s %s (%s)", index, url, res.statusCode));
-			console.log("Fetched item #%s %s", index, url);
+			// console.log("Fetched item #%s %s", index, url);
 			return cb(null, new Buffer(body));
 		});
 	};
@@ -80,14 +80,16 @@ function finalizeArchive(archive, cb) {
 		cb(err);
 	});
 	archive.on('finish', function() {
-		console.log('created archive (%s bytes)', archive.pointer());
+		console.log('Created archive (%s bytes)', archive.pointer());
 		cb(null, archive);
 	});
 	archive.finalize();
 }
 
 app.use(function(req, res) {
-	if(!/(\/[a-z]+)?(\/css\?family=([^\:]+)\:.+)/.test(req.url))
+	if(/^\/ping/.test(req.url))
+		return res.send("Pong");
+	if(!/^(\/[a-z]+)?(\/css\?family=([^\:]+)\:.+)/.test(req.url))
 		return res.status(400).send("Invalid request");
 	var type = RegExp.$1.substr(1);
 	var query = RegExp.$2;
@@ -115,12 +117,12 @@ app.use(function(req, res) {
 			console.error(err);
 
 		if(res.$writingResponse)
-			return console.log("Double write prevented (%s)", err || 'output archive');
+			return console.error("Double write prevented (%s)", err || 'output archive');
 		res.$writingResponse = true;
 
-		if(err) {
+		if(err)
 			return res.status(400).send(err.toString());
-		}
+
 		//pipe to user
 		res.header('Content-Disposition', 'attachment; filename='+archive.name+'.zip;');
 		res.status(200);
@@ -129,5 +131,5 @@ app.use(function(req, res) {
 });
 
 app.listen(port, function() {
-	console.log("listening on %s...", port);
+	console.log("Listening on %s...", port);
 });

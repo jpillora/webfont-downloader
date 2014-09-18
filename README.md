@@ -24,9 +24,17 @@ Easily download Google Webfonts as a zip file
 
 * `/<type>/css` Creates a zip archive of font family provided, where `type` can be one of `tff`, `woff` or `eotwoff` (default).
 
-## Deploy
+## Heroku Usage (Two-click Deploy)
 
 [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
+
+## Local Usage
+
+``` sh
+$ npm i -g webfont-downloader
+$ webfont-downloader
+Listening on 3000...
+```
 
 ## FAQ
 

@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+if(process.argv[2])
+	process.env.PORT = process.argv[2];
+require('../server.js');
