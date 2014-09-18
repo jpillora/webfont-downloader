@@ -1,6 +1,10 @@
 {
   "name":"webfont-downloader",
+<<<<<<< HEAD
   "version":"0.2.0",
+=======
+  "version":"0.1.0",
+>>>>>>> 605128df902599a56b9ca37068191f18ee9d3f67
   "dependencies": {
     "archiver": "^0.11.0",
     "async": "^0.9.0",
