@@ -1,8 +1,16 @@
 # webfont-downloader
 
-## Demo
+## Usage
 
-http://webfont-downloader.herokuapp.com
+Given the CSS file:
+
+### http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800
+
+Just change the domain to:
+
+### http://webfont-downloader.herokuapp.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800
+
+And it should begin to down a OpenSans.zip file
 
 ## Deploy
 

@@ -1,15 +1,19 @@
 
 var async = require("async");
 var archiver = require("archiver");
-var request = require("request");
+var requestLib = require("request");
 var express = require("express");
 var fmt = require("util").format;
-// var fs = require("fs");
 var app = express();
 var port = process.env.PORT || 3000;
 var baseURL = "http://fonts.googleapis.com";
+var userAgents = {
+	chrome: "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36",
+	firefox: "Mozilla/5.0 (Windows NT 5.1; rv:31.0) Gecko/20100101 Firefox/31.0",
+	msie: "Mozilla/5.0 (Windows; U; MSIE 9.0; WIndows NT 9.0; en-US))"
+};
 
-function fetchCSS(name, query, cb) {
+function fetchCSS(request, name, query, cb) {
 	var url = baseURL+query;
 	console.log("Fetching %s", url);
 	request(url, function(err, res, body) {
@@ -17,30 +21,32 @@ function fetchCSS(name, query, cb) {
 			return cb(err);
 		if(res.statusCode !== 200)
 			return cb(fmt("Could not fetch: %s (%s)", url, res.statusCode));
-		cb(err, name, body);
+		cb(err, request, name, body);
 	});
 }
 
-function createFetcher(filename, ext) {
+function createFetcher(request, filename, ext) {
 	var url = filename+"."+ext;
 	return function(cb) {
 		request(url, function(err, res, body) {
 			if(err)
 				return cb(err);
+			if(res.statusCode !== 200)
+				return cb(fmt("Could not fetch item: %s (%s)", url, res.statusCode));
 			console.log("Fetched %s", url);
 			return cb(null, new Buffer(body));
 		});
 	};
 }
 
-function createArchive(name, css, cb) {
+function createArchive(request, name, css, cb) {
 	console.log('creating: %s', name);
 	var index = 0;
 	var filenames = [];
 	var fetches = [];
 
-	var localCss = css.replace(/url\((.+)\.(\w+)\)/g, function(str, filename, ext) {
-		fetches.push(createFetcher(filename, ext));
+	var localCss = css.replace(/url\((https?:\/\/[^\)]+)\.(\w+)\)/g, function(str, filename, ext) {
+		fetches.push(createFetcher(request, filename, ext));
 		var localFilename = name + "-" + index + "." + ext;
 		var cssFilename = "url(./" + localFilename + ")";
 		filename = 
@@ -80,18 +86,29 @@ function finalizeArchive(archive, cb) {
 }
 
 app.use(function(req, res) {
-	if(!/(\/css\?family=([^\:]+)\:.+)/.test(req.url))
+	if(!/(\/[a-z]+)?(\/css\?family=([^\:]+)\:.+)/.test(req.url))
 		return res.status(400).send("Invalid request");
-	var query = RegExp.$1;
-	var name = RegExp.$2.replace(/\W/g,'');
+	var browser = RegExp.$1.substr(1);
+	var query = RegExp.$2;
+	var name = RegExp.$3.replace(/\W/g,'');
+
+	var ua = userAgents[browser];
+	if(browser && !ua)
+		return res.status(400).send("Invalid browser: " + browser);
+
+	//create a request agent
+	var request = requestLib.defaults({
+		headers: {
+			'User-Agent': ua || userAgents.msie
+		}
+	});
 
 	//kick it off
 	async.waterfall([
-		fetchCSS.bind(null, name, query),
+		fetchCSS.bind(null, request, name, query),
 		createArchive,
 		finalizeArchive
 	], function end(err, archive) {
-		
 		if(res.$writingResponse)
 			return console.log("Double write prevented (%s)", err || 'output archive');
 		res.$writingResponse = true;
