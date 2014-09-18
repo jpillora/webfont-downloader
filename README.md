@@ -1,20 +1,43 @@
 # webfont-downloader
 
+Easily download Google Webfonts as a zip file
+
 ## Usage
 
-Given the CSS file:
+1. Given the Google Webfonts CSS file:
 
-http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800
+	http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800
 
-Just change the domain to:
+2. Just change the domain to:
 
-http://webfont-downloader.herokuapp.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800
+	http://webfont-downloader.herokuapp.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800
 
-And it should begin to download an `OpenSans.zip` file
+3. It should begin to down an `OpenSans.zip` file
+
+4. Use it with:
+
+	``` css
+	<link rel="stylesheet" href="./path/to/my/local/css/OpenSans/OpenSans.css">
+	```
+
+## API
+
+* `/<type>/css` Creates a zip archive of font family provided, where `type` can be one of `tff`, `woff` or `eotwoff` (default).
 
 ## Deploy
 
 [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
+
+## FAQ
+
+#### Google already has this service available
+
+It does, though it only provides you with `.tff` files. This service downloads
+`.woff` and `.eof` files and creates a local version of the one-line include CSS file.
+
+#### Why is `eotwoff` the default?
+
+It is the largest download though it has the most support.
 
 #### MIT License
 

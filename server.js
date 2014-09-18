@@ -7,15 +7,15 @@ var fmt = require("util").format;
 var app = express();
 var port = process.env.PORT || 3000;
 var baseURL = "http://fonts.googleapis.com";
-var userAgents = {
-	chrome: "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36",
-	firefox: "Mozilla/5.0 (Windows NT 5.1; rv:31.0) Gecko/20100101 Firefox/31.0",
-	msie: "Mozilla/5.0 (Windows; U; MSIE 9.0; WIndows NT 9.0; en-US))"
+var types = {
+	tff: "Node.js",
+	woff: "Mozilla/5.0 (Windows NT 5.1; rv:31.0) Gecko/20100101 Firefox/31.0",
+	eotwoff: "Mozilla/5.0 (Windows; U; MSIE 9.0; WIndows NT 9.0; en-US))"
 };
 
 function fetchCSS(request, name, query, cb) {
 	var url = baseURL+query;
-	console.log("Fetching %s", url);
+	console.log("Fetching font '%s' at %s", name, url);
 	request(url, function(err, res, body) {
 		if(err)
 			return cb(err);
@@ -25,14 +25,15 @@ function fetchCSS(request, name, query, cb) {
 	});
 }
 
-function createFetcher(request, filename, ext) {
+function createFetcher(request, index, filename, ext) {
 	var url = filename+"."+ext;
 	return function(cb) {
+		console.log("Fetching item #%s %s", index, url);
 		request(url, function(err, res, body) {
 			if(err)
 				return cb(err);
 			if(res.statusCode !== 200)
-				return cb(fmt("Could not fetch item: %s (%s)", url, res.statusCode));
+				return cb(fmt("Could not fetch item #%s %s (%s)", index, url, res.statusCode));
 			console.log("Fetched %s", url);
 			return cb(null, new Buffer(body));
 		});
@@ -46,17 +47,17 @@ function createArchive(request, name, css, cb) {
 	var fetches = [];
 
 	var localCss = css.replace(/url\((https?:\/\/[^\)]+)\.(\w+)\)/g, function(str, filename, ext) {
-		fetches.push(createFetcher(request, filename, ext));
+
+		fetches.push(createFetcher(request, index, filename, ext));
 		var localFilename = name + "-" + index + "." + ext;
 		var cssFilename = "url(./" + localFilename + ")";
-		filename = 
 		filenames[index] = localFilename;
 		//next
 		index++;
 		return cssFilename;
 	});
 
-	async.parallel(fetches, function(err, buffers) {
+	async.parallelLimit(fetches, 10, function(err, buffers) {
 		if(err)
 			return cb(err);
 
@@ -88,18 +89,18 @@ function finalizeArchive(archive, cb) {
 app.use(function(req, res) {
 	if(!/(\/[a-z]+)?(\/css\?family=([^\:]+)\:.+)/.test(req.url))
 		return res.status(400).send("Invalid request");
-	var browser = RegExp.$1.substr(1);
+	var type = RegExp.$1.substr(1);
 	var query = RegExp.$2;
 	var name = RegExp.$3.replace(/\W/g,'');
 
-	var ua = userAgents[browser];
-	if(browser && !ua)
-		return res.status(400).send("Invalid browser: " + browser);
+	var ua = types[type];
+	if(types && !ua)
+		return res.status(400).send("Invalid type: " + type);
 
 	//create a request agent
 	var request = requestLib.defaults({
 		headers: {
-			'User-Agent': ua || userAgents.msie
+			'User-Agent': ua || types.eotwoff
 		}
 	});
 
