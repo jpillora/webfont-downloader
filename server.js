@@ -15,10 +15,11 @@ var types = {
 };
 var reqid = 0;
 
-var through = require('through');
-function pass(data) {
-	this.queue(data);
-}
+// var through = require('through');
+// function pass(data) {
+// 	console.log('queue data %s', data.length);
+// 	this.queue(data);
+// }
 
 function fetchCSS(request, name, query, cb) {
 	var url = baseURL+query;
@@ -43,11 +44,10 @@ function createFetcher(request, archive, index, url, filename) {
 
 			var buff = new Buffer(body);
 			//workaround: passing buffer breaks arhiver
-			var stream = through(pass);
-			archive.append(stream, { name: filename });
-			stream.emit(buff);
-			stream.end();
-
+			// var stream = through(pass);
+			// archive.append(stream, { name: filename });
+			// stream.end(buff);
+			archive.append(buff, { name: filename });
 			// request.log("Adding #%s %s (#%s)", index, filename, buff.length);
 			return cb(null);
 		});
