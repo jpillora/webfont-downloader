@@ -13,10 +13,16 @@ var types = {
 	woff2: "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36",
 	eotwoff: "Mozilla/5.0 (Windows; U; MSIE 9.0; WIndows NT 9.0; en-US))"
 };
+var reqid = 0;
+
+var through = require('through');
+function pass(data) {
+	this.queue(data);
+}
 
 function fetchCSS(request, name, query, cb) {
 	var url = baseURL+query;
-	console.log("Fetching font '%s' at %s", name, url);
+	request.log("Fetching font '%s' at %s", name, url);
 	request(url, function(err, res, body) {
 		if(err)
 			return cb(err);
@@ -26,71 +32,71 @@ function fetchCSS(request, name, query, cb) {
 	});
 }
 
-function createFetcher(request, index, filename, ext) {
-	var url = filename+"."+ext;
+function createFetcher(request, archive, index, url, filename) {
 	return function(cb) {
-		// console.log("Fetching item #%s %s", index, url);
+		// request.log("Fetching item #%s %s", index, url);
 		request(url, function(err, res, body) {
 			if(err)
 				return cb(err);
 			if(res.statusCode !== 200)
 				return cb(fmt("Could not fetch item #%s %s (%s)", index, url, res.statusCode));
-			// console.log("Fetched item #%s %s", index, url);
-			return cb(null, new Buffer(body));
+
+			var buff = new Buffer(body);
+			//workaround: passing buffer breaks arhiver
+			var stream = through(pass);
+			archive.append(stream, { name: filename });
+			stream.emit(buff);
+			stream.end();
+
+			// request.log("Adding #%s %s (#%s)", index, filename, buff.length);
+			return cb(null);
 		});
 	};
 }
 
 function createArchive(request, name, css, cb) {
-	console.log('Creating: %s', name);
 	var index = 0;
-	var filenames = [];
 	var fetches = [];
 
-	var localCss = css.replace(/url\((https?:\/\/[^\)]+)\.(\w+)\)/g, function(str, filename, ext) {
+	request.log('Creating archive...');
+	var archive = archiver('zip');
+	archive.$name = name;
 
-		fetches.push(createFetcher(request, index, filename, ext));
+	var localCss = css.replace(/url\((https?:\/\/[^\)]+)\.(\w+)\)/g, function(str, filename, ext) {
+		var remoteUrl = filename+"."+ext;
 		var localFilename = name + "-" + index + "." + ext;
 		var cssFilename = "url(./" + localFilename + ")";
-		filenames[index] = localFilename;
-		//next
-		index++;
+		fetches.push(createFetcher(request, archive, index++, remoteUrl, localFilename));
 		return cssFilename;
 	});
 
-	async.parallelLimit(fetches, 10, function(err, buffers) {
+	async.parallelLimit(fetches, 3, function(err) {
 		if(err)
 			return cb(err);
-
-		var archive = archiver('zip');
-		archive.name = name;
+		//finally, add the new css file
 		archive.append(new Buffer(localCss), { name: name + ".css" });
-
-		for(var i = 0; i < buffers.length; i++) {
-			var buff = buffers[i];
-			var filename = filenames[i];
-			archive.append(buff, { name: filename });
-		}
-
-		cb(null, archive);
+		cb(null, request, archive);
 	});
 }
 
-function finalizeArchive(archive, cb) {
+function finalizeArchive(request, archive, cb) {
 	archive.on('error', function(err) {
+		request.log('Error with archive (%s)', err);
 		cb(err);
 	});
 	archive.on('finish', function() {
-		console.log('Created archive (%s bytes)', archive.pointer());
+		request.log('Created archive (%s bytes)', archive.pointer());
 		cb(null, archive);
 	});
 	archive.finalize();
 }
 
 app.use(function(req, res) {
+	if(req.url === "/")
+		return res.status(302).header('location','https://github.com/jpillora/webfont-downloader').send("redirecting...");
 	if(/^\/ping/.test(req.url))
 		return res.send("Pong");
-	if(!/^(\/[a-z2]+)?(\/css\?family=([^\:]+)\:.+)/.test(req.url))
+	if(!/^(\/[a-z2]+)?(\/css\?family=([^\:]+).*)$/.test(req.url))
 		return res.status(400).send("Invalid request");
 	var type = RegExp.$1.substr(1);
 	var query = RegExp.$2;
@@ -100,12 +106,21 @@ app.use(function(req, res) {
 	if(type && !ua)
 		return res.status(400).send("Invalid type: " + type);
 
+	//identify request
+	var id = reqid;
+	reqid++;
+
 	//create a request agent
 	var request = requestLib.defaults({
+		timeout: 3000,
 		headers: {
 			'User-Agent': ua || types.eotwoff
 		}
 	});
+	request.log = function() {
+		arguments[0] = "#" + id + " " + arguments[0];
+		console.log.apply(console, arguments);
+	};
 
 	//kick it off
 	async.waterfall([
@@ -115,17 +130,19 @@ app.use(function(req, res) {
 	], function end(err, archive) {
 		//log errors
 		if(err)
-			console.error(err);
+			request.log(err);
 
 		if(res.$writingResponse)
-			return console.error("Double write prevented (%s)", err || 'output archive');
+			return request.log("Double write prevented (%s)", err || 'output archive');
 		res.$writingResponse = true;
 
 		if(err)
 			return res.status(400).send(err.toString());
 
+		var zipname = archive.$name+'.zip';
+		request.log("Writing out: " + zipname);
 		//pipe to user
-		res.header('Content-Disposition', 'attachment; filename='+archive.name+'.zip;');
+		res.header('Content-Disposition', 'attachment; filename='+zipname+';');
 		res.status(200);
 		archive.pipe(res);
 	});

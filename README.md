@@ -6,11 +6,11 @@ Easily download Google Webfonts as a zip file
 
 1. Given the Google Webfonts CSS file:
 
-	http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800
+	http://fonts.googleapis.com/css?family=Open+Sans
 
 2. Just change the domain to:
 
-	http://webfonts.jpillora.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800
+	http://webfonts.jpillora.com/css?family=Open+Sans
 
 3. It should begin to down an `OpenSans.zip` file
 
@@ -20,17 +20,29 @@ Easily download Google Webfonts as a zip file
 	<link rel="stylesheet" href="./path/to/my/local/css/OpenSans/OpenSans.css">
 	```
 
+## Examples
+
+* Default styles: http://webfonts.jpillora.com/css?family=Noto+Sans
+
+* Include all styles: http://webfonts.jpillora.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800
+
 ## API
 
-* `/<type>/css` Creates a zip archive of font family provided, where `type` can be one of `tff`, `woff`,`woff2` or `eotwoff` (default).
+### `/<type>/css`
 
-## Remote Usage (Pre-hosted)
+	Creates a zip archive of font family provided, where `type` can be one of `tff`, `woff`,`woff2` or `eotwoff` (default).
 
+## CLI Usage
+
+``` sh
+wget --content-disposition 'http://webfonts.jpillora.com/css?family=<your-font-here>'
+# or
+curl 'http://webfonts.jpillora.com/css?family=<your-font-here>' > /tmp/font.zip
 ```
-http://webfonts.jpillora.com/css?family=<Insert chosen font here>
-```
 
-## Remote Usage (Self-hosted)
+*http://webfonts.jpillora.com was deployed using the button below*
+
+## Deploy your own
 
 [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
 
