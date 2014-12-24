@@ -30,7 +30,7 @@ Easily download Google Webfonts as a zip file
 
 ### `/<type>/css?family=<font:styles>`
 
-Creates a zip archive of `font` family provided, including each of the `styles` listed, where `type` can be one of `tff`, `woff`,`woff2` or `eotwoff` (default).
+Creates a zip archive of `font` family provided, including each of the `styles` listed, where `type` can be one of `ttf`, `woff`,`woff2` or `eotwoff` (default).
 
 ## CLI Usage
 
@@ -58,7 +58,7 @@ Listening on 3000...
 
 #### Google already has this service available
 
-It does, though it provides you with **only** the `.tff` files. This also service downloads
+It does, though it provides you with **only** the `.ttf` files. This also service downloads
 `.woff` and `.eof` files and creates a local version of the one-line include CSS file.
 
 #### Why is `eotwoff` the default?
