@@ -8,10 +8,10 @@ var app = express();
 var port = process.env.PORT || 3000;
 var baseURL = "http://fonts.googleapis.com";
 var types = {
-	tff: "Node.js",
+	ttf: "Node.js",
 	woff: "Mozilla/5.0 (Windows NT 5.1; rv:31.0) Gecko/20100101 Firefox/31.0",
 	woff2: "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36",
-	eotwoff: "Mozilla/5.0 (Windows; U; MSIE 9.0; WIndows NT 9.0; en-US))"
+	eot: "Mozilla/5.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; GTB7.4; InfoPath.2; SV1; .NET CLR 3.3.69573; WOW64; en-US)"
 };
 var reqid = 0;
 
@@ -114,7 +114,7 @@ app.use(function(req, res) {
 	var request = requestLib.defaults({
 		timeout: 3000,
 		headers: {
-			'User-Agent': ua || types.eotwoff
+			'User-Agent': ua || types.woff
 		}
 	});
 	request.log = function() {
