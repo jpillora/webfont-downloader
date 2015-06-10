@@ -102,7 +102,7 @@ app.use(function(req, res) {
 	var query = RegExp.$2;
 	var name = RegExp.$3.replace(/\W/g,'');
 
-	var ua = types[type];
+	var ua = type === "detect" ? req.headers['user-agent'] : types[type];
 	if(type && !ua)
 		return res.status(400).send("Invalid type: " + type);
 
