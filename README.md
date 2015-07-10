@@ -1,6 +1,6 @@
 # Webfont Downloader
 
-Easily download Google Webfonts as a zip file
+Easily download Google Webfonts as a zip file. Useful for offline development. Recently ported from [Node to Go](https://github.com/jpillora/webfont-downloader/commit/54c7ab29500acebad9c3523e7738402a7a7ff6c9).
 
 ## Usage
 
@@ -8,7 +8,7 @@ Easily download Google Webfonts as a zip file
 
 	https://fonts.googleapis.com/css?family=Open+Sans
 
-2. Just change `googleapis` to `jpillora` in the URL:
+2. Just change `googleapis` in the URL to `jpillora`:
 
 	https://fonts.jpillora.com/css?family=Open+Sans
 
@@ -30,7 +30,9 @@ Easily download Google Webfonts as a zip file
 
 ### `/<type>/css?family=<font:styles>`
 
-Creates a zip archive of `font` family provided, including each of the `styles` listed, where the optional `type` can be one of `ttf`, `woff` (default),`woff2` or `eot`.
+Creates a zip archive of `font` family provided, including each of the `styles` listed.
+
+The `type` param is optional and can be one of `ttf`, `woff` (default),`woff2`, `eot` or `detect` (chooses the best type for your browser).
 
 ## CLI Usage
 

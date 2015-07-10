@@ -28,6 +28,7 @@ type Handler struct {
 	count int
 }
 
+//implement the http.Handler interface
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.RequestURI()
 	//forward users to README
@@ -43,6 +44,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//only allow sane requests
 	m := pathParser.FindStringSubmatch(path)
 	if len(m) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
@@ -50,21 +52,22 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//set request ID for logging
 	h.count++
 	requestID := h.count
 
+	//determine settings
 	fontType := "woff" //default
 	if m[1] != "" {
 		fontType = m[2]
 	}
 	query := m[3]
 	name := nonwords.ReplaceAllString(m[4], "")
-
 	ua := ""
 	if fontType == "detect" {
 		ua = r.Header.Get("User-Agent")
-	} else if u, ok := userAgents[fontType]; ok {
-		ua = u
+	} else {
+		ua = userAgents[fontType]
 	}
 	if ua == "" {
 		w.WriteHeader(http.StatusBadRequest)
@@ -72,7 +75,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//begin!
+	//fetch css file
 	cssBytes, err := h.fetch(ua, baseURL+query)
 	if err != nil {
 		w.WriteHeader(http.StatusBadGateway)
@@ -80,18 +83,16 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//stream contents
+	//stream zip file
 	w.Header().Set("Content-Disposition", "attachment; filename="+name+".zip;")
 	w.WriteHeader(http.StatusOK)
 	zip := archive.NewZipWriter(w)
-
 	log.Printf("[#%04d] Creating '%s' archive (%s)...", requestID, name, query)
 
-	fileID := 1
 	fileFetches := sync.WaitGroup{}
-
-	//1 transform css file
-	//2 fetch each URL import
+	//1 transform css file and insert in zip
+	//2 async fetch each font import and insert in zip
+	fileID := 1
 	cssStr := cssURL.ReplaceAllStringFunc(string(cssBytes), func(url string) string {
 		m = cssURL.FindStringSubmatch(url)
 		//parse url
@@ -113,14 +114,14 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		//swap remote url with local url
 		return "url(./" + localPath + ")"
 	})
-
-	//insert modified css
+	//insert transformed css file
 	zip.AddBytes(name+".css", []byte(cssStr))
+
 	//wait for all fetches to complete
 	fileFetches.Wait()
 	//finalize archive
-	zip.Close()
 	log.Printf("[#%04d] Finalize '%s.zip'", requestID, name)
+	zip.Close()
 }
 
 func (h *Handler) fetch(ua, url string) ([]byte, error) {
@@ -133,7 +134,7 @@ func (h *Handler) fetch(ua, url string) ([]byte, error) {
 	defer resp.Body.Close()
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("Download cancelled from %s", baseURL)
+		return nil, fmt.Errorf("Download cancelled by %s", baseURL)
 	}
 	return b, nil
 }
