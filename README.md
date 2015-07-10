@@ -12,11 +12,11 @@ Easily download Google Webfonts as a zip file
 
 	https://fonts.jpillora.com/css?family=Open+Sans
 
-3. It should begin to down an `OpenSans.zip` file
+3. It should begin to download an `OpenSans.zip` file
 
 4. Use it with:
 
-	``` css
+	``` html
 	<link rel="stylesheet" href="./path/to/my/local/css/OpenSans/OpenSans.css">
 	```
 
@@ -30,7 +30,7 @@ Easily download Google Webfonts as a zip file
 
 ### `/<type>/css?family=<font:styles>`
 
-Creates a zip archive of `font` family provided, including each of the `styles` listed, where `type` can be one of `ttf`, `woff` (default),`woff2` or `eot`.
+Creates a zip archive of `font` family provided, including each of the `styles` listed, where the optional `type` can be one of `ttf`, `woff` (default),`woff2` or `eot`.
 
 ## CLI Usage
 
