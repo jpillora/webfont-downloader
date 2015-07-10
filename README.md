@@ -6,11 +6,11 @@ Easily download Google Webfonts as a zip file
 
 1. Given the Google Webfonts CSS file:
 
-	http://fonts.googleapis.com/css?family=Open+Sans
+	https://fonts.googleapis.com/css?family=Open+Sans
 
-2. Just change the domain to:
+2. Just change `googleapis` to `jpillora` in the URL:
 
-	http://webfonts.jpillora.com/css?family=Open+Sans
+	https://fonts.jpillora.com/css?family=Open+Sans
 
 3. It should begin to down an `OpenSans.zip` file
 
@@ -22,9 +22,9 @@ Easily download Google Webfonts as a zip file
 
 ## Examples
 
-* Default styles: http://webfonts.jpillora.com/css?family=Noto+Sans
+* Default styles: https://fonts.jpillora.com/css?family=Noto+Sans
 
-* Include all styles: http://webfonts.jpillora.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800
+* Include all styles: https://fonts.jpillora.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800
 
 ## API
 
@@ -35,12 +35,12 @@ Creates a zip archive of `font` family provided, including each of the `styles` 
 ## CLI Usage
 
 ``` sh
-wget --content-disposition 'http://webfonts.jpillora.com/css?family=<your-font-here>'
+wget --content-disposition 'https://fonts.jpillora.com/css?family=<your-font-here>'
 # or
-curl 'http://webfonts.jpillora.com/css?family=<your-font-here>' > /tmp/font.zip
+curl 'https://fonts.jpillora.com/css?family=<your-font-here>' > /tmp/font.zip
 ```
 
-*http://webfonts.jpillora.com was deployed using the button below*
+*https://fonts.jpillora.com was deployed using the button below*
 
 ## Deploy your own
 
@@ -49,7 +49,8 @@ curl 'http://webfonts.jpillora.com/css?family=<your-font-here>' > /tmp/font.zip
 ## Local Usage
 
 ``` sh
-$ npm i -g webfont-downloader
+$ # install go
+$ go get github.com/jpillora/webfont-downloader
 $ webfont-downloader
 Listening on 3000...
 ```
