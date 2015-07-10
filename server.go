@@ -15,7 +15,7 @@ type App struct {
 	//handler options
 	*webfontdownloader.Handler `type:"embedded"`
 	//server options
-	Port int `help:"Listening port"`
+	Port int `help:"Listening port" env:"PORT"`
 }
 
 func main() {
